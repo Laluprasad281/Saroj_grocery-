@@ -187,14 +187,9 @@
       background: none;
     }
 
-
-
     .settings-menu button:last-child {
       border-bottom: none;
     }
-
-
-
 
     @media (max-width: 768px) {
       form {
@@ -287,14 +282,14 @@
     }
 
     /* New styles for the manual adjustments form */
-    #manual-adjustments-form {
+    #manual-adjustments-form, #net-balance-payment-form {
       padding: 20px;
       background: #dfdadf;
       border-radius: 8px;
       margin-top: 30px;
     }
 
-    #manual-adjustments-form h5 {
+    #manual-adjustments-form h5, #net-balance-payment-form h5 {
       font-size: 1.2rem;
       font-weight: 600;
       margin-bottom: 15px;
@@ -309,11 +304,22 @@
       gap: 10px;
       margin-top: 10px;
     }
+    
+    .net-payment-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
 
-    .manual-input-group label {
+    .manual-input-group label, .net-payment-group label {
       min-width: 80px;
       font-weight: 500;
       color: #555;
+    }
+    
+    .net-payment-group select, .net-payment-group input {
+      margin: 0;
     }
 
     .manual-input-group input {
@@ -323,7 +329,7 @@
     }
     
     /* Style for the new manual log */
-    #manual-log {
+    #manual-log, #net-payment-log {
       margin-top: 20px;
       padding: 15px;
       background: #f0f0f0;
@@ -331,7 +337,7 @@
       border: 1px solid #ddd;
     }
     
-    #manual-log h6 {
+    #manual-log h6, #net-payment-log h6 {
       font-weight: 600;
       margin-bottom: 10px;
       border-bottom: 1px dashed #ccc;
@@ -348,6 +354,70 @@
       border-bottom: 1px solid #eee;
       padding-bottom: 5px;
       margin-bottom: 5px;
+    }
+    
+    /* New tab styles */
+    .tab-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    
+    .tab-button {
+      background: #eee;
+      border: 1px solid #ccc;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-weight: 500;
+      color: #555;
+      transition: background-color 0.2s ease;
+    }
+    
+    .tab-button:first-child {
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+      border-right: none;
+    }
+    
+    .tab-button:last-child {
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+      border-left: none;
+    }
+    
+    .tab-button.active {
+      background: #4A90E2;
+      color: #fff;
+      border-color: #4A90E2;
+    }
+    
+    .tab-content {
+      display: none;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    #immediate-payment-section {
+      grid-column: 1 / -1;
+      margin-top: 15px;
+      padding: 15px;
+      background: #e0d4f5;
+      border-radius: 8px;
+    }
+    #immediate-payment-section p {
+      font-size: 0.8em;
+      margin-bottom: 10px;
+      color: #555;
+    }
+    #payment-buyer {
+      width: 100%;
+      margin: 0;
+      margin-bottom: 10px;
+    }
+    #payment-amount {
+      width: 100%;
+      margin: 0;
     }
   </style>
 </head>
@@ -394,53 +464,66 @@
     <h1 id="dashboard-title">Grocery Expenser</h1>
   </div>
 
-  <label for="month-selector"><strong>Month:</strong>(Which month's data would you like to see?)</label>
-  <select id="month-selector" onchange="switchMonth()"></select>
-  </label>
-  <button onclick="deleteMonth()" class="btn-red">Delete Month</button>
 
-  <form onsubmit="event.preventDefault(); addEntry();">
-    <input type="date" id="date" required placeholder="Date"/>
-    <select id="item" required ></select>
-    <input type="number" id="price" placeholder="Price" required />
-    <select id="buyer" required></select>
-    <div id="buyer-checks" ></div>
-    <button class="btn-green">Add Entry</button>
-  </form>
+  <div id="main-view" class="tab-content active">
+    <label for="month-selector"><strong>Month:</strong>(Which month's data would you like to see?)</label>
+    <select id="month-selector" onchange="switchMonth()"></select>
+    </label>
+    <button onclick="deleteMonth()" class="btn-red">Delete Month</button>
 
-  <form id="manual-adjustments-form" onsubmit="event.preventDefault(); addManualEntry();">
-    <h5>Manual Adjustments (Optional)</h5>
-    <div id="manual-adjustments">
+    <form onsubmit="event.preventDefault(); addEntry();">
+      <input type="date" id="date" required placeholder="Date"/>
+      <select id="item" required ></select>
+      <input type="number" id="price" placeholder="Price" required />
+      <select id="buyer" required></select>
+      <div id="buyer-checks" ></div>
+      <button class="btn-green">Add Entry</button>
+    </form>
+
+    <h2 style="margin-top: 20px; text-align: center;">Monthly History</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Item</th>
+            <th>Price</th>
+            <th>Buyer</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+
+    <form id="net-balance-payment-form" onsubmit="event.preventDefault(); addNetPayment();">
+      <h5>Net Balance Payments (Optional)</h5>
+      <div class="net-payment-group">
+        <select id="net-payer-selector" required>
+            <option value="">Payer</option>
+        </select>
+        <input type="number" id="net-payment-amount" placeholder="Amount" required />
+        <select id="net-receiver-selector" required>
+            <option value="">Receiver</option>
+        </select>
       </div>
-    <div class="button-center" style="margin-top: 20px;">
-      <button type="submit" class="btn-blue" id="adjust-btn">Adjust Summary</button>
-      <button type="button" class="btn-red" onclick="clearAdjustments()">Clear Adjustments</button>
-    </div>
-  </form>
-  
-  <div id="manual-log">
-    <h6>Manual Adjustment Log:</h6>
-    </div>
+      <div class="button-center" style="margin-top: 20px;">
+        <button type="submit" class="btn-blue">Add Net Payment</button>
+      </div>
+    </form>
+    
+    <div id="net-payment-log">
+        <h6>Net Balance Payment Log:</h6>
+        </div>
 
-  <h3 id="total">Total: ₹0.00</h3>
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Item</th>
-          <th>Price</th>
-          <th>Buyer</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="table-body"></tbody>
-    </table>
+
+    <h3 id="total">Total: ₹0.00</h3>
+    <div id="summary"></div>
+    <canvas id="monthlyPie" height="200"></canvas>
+    <canvas id="monthBar" height="200"></canvas>
   </div>
 
-  <div id="summary"></div>
-  <canvas id="monthlyPie" height="200"></canvas>
-  <canvas id="monthBar" height="200"></canvas>
+
   <div class="button-center">
     <button class="btn-blue" onclick="downloadFullCSV()">Download CSV</button>
     <button class="btn-red" onclick="resetData()">Reset Data</button>
@@ -572,7 +655,8 @@
       excludeLabel: "Exclude: (If someone stays away for this day)",
       summaryTitle: "Net balance (Paid - Share)",
       summaryTableHeaders: ["Name", "Paid Money", "Each Share", "Net Balance"],
-      manualLogTitle: "Manual Adjustment Log:"
+      netPaymentTitle: "Net Balance Payment Log:",
+      netPaymentTableHeaders: ["Date", "Payer", "Amount", "Receiver"]
     },
     hi: {
       dashboardTitle: "ग्रोसरी खर्चा",
@@ -593,8 +677,8 @@
       excludeLabel: "बाहर रखें: (यदि कोई उस दिन शामिल नहीं है)",
       summaryTitle: "नेट शेष (भुगतान - हिस्सा)",
       summaryTableHeaders: ["नाम", "भुगतान राशि", "प्रति हिस्सा", "शेष राशि"],
-      manualLogTitle: "मैनुअल समायोजन लॉग:"
-
+      netPaymentTitle: "नेट शेष भुगतान लॉग:",
+      netPaymentTableHeaders: ["तारीख", "भुगतानकर्ता", "राशि", "प्राप्तकर्ता"]
     },
     or: {
       dashboardTitle: "ଗ୍ରୋସେରୀ ଖର୍ଚ୍ଚ",
@@ -615,7 +699,8 @@
       excludeLabel: "ବାହାରେ ରଖନ୍ତୁ: (ଯଦି କେହି ସେ ଦିନ ରହୁନାହାନ୍ତି)",
       summaryTitle: "ନେଟ ବ୍ୟାଲାନ୍ସ (ଦେଇଥିବା - ଅଂଶ)",
       summaryTableHeaders: ["ନାମ", "ଦେଇଥିବା ଟଙ୍କା", "ପ୍ରତି ଅଂଶ", "ଶେଷ ରାଶି"],
-      manualLogTitle: "ମାନୁଆଲ୍ ସମାୟୋଜନ ଲଗ୍:"
+      netPaymentTitle: "ନେଟ ବାଲାନ୍ସ ପେମେଣ୍ଟ ଲଗ୍:",
+      netPaymentTableHeaders: ["ତାରିଖ", "ପେମେଣ୍ଟକର୍ତ୍ତା", "ରାଶି", "ଗ୍ରହଣକାରୀ"]
     }
   };
   function changeLanguage() {
@@ -636,15 +721,23 @@
     document.querySelector("label[for='setup-buyers']").innerText = t.buyersLabel;
     document.querySelector("#setup-container button").innerText = t.saveContinue;
 
-    const headers = document.querySelectorAll("table thead th");
+    const historyHeaders = document.querySelectorAll("#main-view table thead th");
     t.tableHeaders.forEach((headerText, i) => {
-      if (headers[i]) headers[i].innerText = headerText;
+      if (historyHeaders[i]) historyHeaders[i].innerText = headerText;
+    });
+
+    
+    const netPaymentLogHeaders = document.querySelectorAll("#net-payment-log table thead th");
+    t.netPaymentTableHeaders.forEach((headerText, i) => {
+      if (netPaymentLogHeaders[i]) netPaymentLogHeaders[i].innerText = headerText;
     });
 
     const catSel = document.getElementById("item");
     const buyerSel = document.getElementById("buyer");
+    
     if (catSel.options.length) catSel.options[0].text = t.selectCategory;
     if (buyerSel.options.length) buyerSel.options[0].text = t.selectBuyer;
+    
     document.getElementById("price").placeholder = t.pricePlaceholder;
 
     const checksDiv = document.getElementById("buyer-checks");
@@ -653,8 +746,7 @@
       if (old) old.innerText = t.excludeLabel;
     }
     
-    // Update manual log title
-    document.querySelector('#manual-log h6').innerText = t.manualLogTitle;
+    document.querySelector('#net-payment-log h6').innerText = t.netPaymentTitle;
 
     showBuyerSummary();
   }
@@ -702,9 +794,9 @@
   function loadData() {
     db.ref(`users/${userId}/entries/${selectedMonth}`).once("value").then(snap => {
       const allEntries = snap.val() || {};
-      // Filter out the 'manual' entry to display in the table
+      // Filter out the 'net-payments' entries to display in the table
       data = Object.entries(allEntries)
-        .filter(([id, val]) => id !== 'manual')
+        .filter(([id, val]) => id !== 'net-payments')
         .map(([id, val]) => ({ id, ...val }));
       showDashboard();
     });
@@ -715,9 +807,14 @@
 
     const catSel = document.getElementById("item");
     const buyerSel = document.getElementById("buyer");
+    const netPayerSel = document.getElementById("net-payer-selector");
+    const netReceiverSel = document.getElementById("net-receiver-selector");
 
     catSel.innerHTML = "";
     buyerSel.innerHTML = "";
+    netPayerSel.innerHTML = `<option value="">Payer</option>`;
+    netReceiverSel.innerHTML = `<option value="">Receiver</option>`;
+
 
     catSel.innerHTML += `<option value="" disabled selected>Select Category</option>`;
     buyerSel.innerHTML += `<option value="" disabled selected>Select Buyer</option>`;
@@ -727,6 +824,8 @@
     });
     userPrefs.buyers.forEach(b => {
       buyerSel.innerHTML += `<option value="${b}">${b}</option>`;
+      netPayerSel.innerHTML += `<option value="${b}">${b}</option>`;
+      netReceiverSel.innerHTML += `<option value="${b}">${b}</option>`;
     });
 
     const checksDiv = document.getElementById("buyer-checks");
@@ -738,8 +837,7 @@
         </label>`;
     });
 
-    renderManualAdjustments();
-    renderManualLog();
+    renderNetPaymentsLog();
 
     const tbody = document.getElementById("table-body");
     tbody.innerHTML = "";
@@ -749,6 +847,7 @@
       const excludedText = e.excluded && e.excluded.length
         ? `<div style="font-size: 0.75rem; color: #777; margin-top: 4px; font-style: italic;">Excluded: ${e.excluded.join(", ")}</div>`
         : "";
+      
 
       tbody.innerHTML += `<tr>
         <td>${e.date}</td>
@@ -771,13 +870,16 @@
 
   function addEntry() {
     const date = document.getElementById("date").value;
-    const m = date.slice(0,7);
+    const m = date.slice(0, 7);
     if (m !== selectedMonth) { selectedMonth = m; setupMonths(); }
+    
     const item = document.getElementById("item").value;
     const price = parseFloat(document.getElementById("price").value);
     const buyer = document.getElementById("buyer").value;
-    if (!date || !item || isNaN(price) || !buyer) return alert("Fill all");
+    
 
+    if (!date || !item || isNaN(price) || !buyer) return alert("Fill all required fields.");
+    
     const excluded = [];
     document.querySelectorAll(".buyer-exclude:checked").forEach(cb => excluded.push(cb.value));
 
@@ -797,6 +899,11 @@
     document.getElementById("item").value = entry.item;
     document.getElementById("price").value = entry.price;
     document.getElementById("buyer").value = entry.buyer;
+    
+    document.querySelectorAll(".buyer-exclude").forEach(cb => {
+      cb.checked = entry.excluded && entry.excluded.includes(cb.value);
+    });
+    
     editIndex = id;
   }
 
@@ -812,6 +919,7 @@
     document.getElementById("price").value = "";
     document.getElementById("buyer").value = "";
     document.querySelectorAll(".buyer-exclude:checked").forEach(cb => cb.checked = false);
+    editIndex = "";
   }
 
   function resetData() {
@@ -826,40 +934,51 @@
     db.ref(`users/${userId}/entries/${selectedMonth}`).once("value").then(snap => {
       const monthEntries = snap.val() || {};
       const regularEntries = Object.values(monthEntries).filter(e => e.date);
-      const manualAdjustments = monthEntries.manual || {};
+      const netPayments = monthEntries['net-payments'] || {};
 
-      if (!regularEntries.length && Object.keys(manualAdjustments).length === 0) {
+      if (!regularEntries.length && Object.keys(netPayments).length === 0) {
         alert("No data to export for this month.");
         return;
       }
 
-      let csv = "Month,Date,Item,Price,Buyer,Excluded\n";
+      let csv = "Month,Date,Item,Price,Buyer,Excluded,Payer,Amount,Receiver\n";
       let monthTotal = 0;
       const buyerTotals = {};
 
       regularEntries.forEach(e => {
-        csv += `${selectedMonth},${e.date},${e.item},${e.price},${e.buyer},"${e.excluded.join(';')}"\n`;
+        csv += `${selectedMonth},${e.date},${e.item},${e.price},${e.buyer},"${e.excluded.join(';')}",,,\n`;
         monthTotal += e.price;
         buyerTotals[e.buyer] = (buyerTotals[e.buyer] || 0) + e.price;
       });
-
-      for(const buyer in manualAdjustments) {
-        monthTotal += manualAdjustments[buyer];
-        buyerTotals[buyer] = (buyerTotals[buyer] || 0) + manualAdjustments[buyer];
-        csv += `${selectedMonth},,,${manualAdjustments[buyer]},${buyer},Manual Adjustment\n`;
+      
+      for(const id in netPayments) {
+        const p = netPayments[id];
+        buyerTotals[p.payer] = (buyerTotals[p.payer] || 0) - p.amount;
+        buyerTotals[p.receiver] = (buyerTotals[p.receiver] || 0) + p.amount;
+        csv += `${selectedMonth},${p.date},Net Balance Payment,,,${p.payer},${p.amount},${p.receiver}\n`;
       }
 
-
       const allBuyers = userPrefs.buyers;
-      const equalShare = allBuyers.length ? monthTotal / allBuyers.length : 0;
+      let owesTotal = 0;
+      const buyerOwes = {};
+      regularEntries.forEach(e => {
+        const excluded = e.excluded || [];
+        const includedBuyers = allBuyers.filter(b => !excluded.includes(b));
+        const share = includedBuyers.length > 0 ? e.price / includedBuyers.length : 0;
+        includedBuyers.forEach(b => {
+          buyerOwes[b] = (buyerOwes[b] || 0) + share;
+        });
+        owesTotal += e.price;
+      });
 
       csv += `\n${selectedMonth},,,Total,${monthTotal}\n`;
 
       allBuyers.forEach(buyer => {
         const paid = buyerTotals[buyer] || 0;
-        const diff = paid - equalShare;
+        const owes = buyerOwes[buyer] || 0;
+        const diff = paid - owes;
         const status = diff > 0 ? "(More)" : diff < 0 ? "(Less)" : "(Equal)";
-        csv += `${selectedMonth},,,${buyer},${diff >= 0 ? "+" : ""}${diff.toFixed(2)} ${status}\n`;
+        csv += `${selectedMonth},,,${buyer},${paid.toFixed(2)},${owes.toFixed(2)},${diff >= 0 ? "+" : ""}${diff.toFixed(2)} ${status}\n`;
       });
 
       const blob = new Blob([csv], { type: "text/csv" });
@@ -891,7 +1010,7 @@
         const monthData = all[m] || {};
         let monthTotal = 0;
         for(const key in monthData) {
-          if(key !== 'manual') {
+          if(key !== 'net-payments') {
             monthTotal += monthData[key].price;
           }
         }
@@ -903,88 +1022,87 @@
     });
   }
 
-  function renderManualAdjustments() {
-    const manualDiv = document.getElementById("manual-adjustments");
-    manualDiv.innerHTML = ''; // Clear previous content
+  function renderNetPaymentsLog() {
+      const netPaymentLogDiv = document.getElementById("net-payment-log");
+      const t = translations[currentLang];
 
-    userPrefs.buyers.forEach(buyer => {
-      manualDiv.innerHTML += `
-        <div class="manual-input-group">
-          <label>${buyer}</label>
-          <input type="number" class="manual-input" data-buyer="${buyer}" placeholder="Amount Paid">
-        </div>
-      `;
-    });
-    
-    // Load existing manual adjustments into the inputs when the dashboard loads
-    db.ref(`users/${userId}/entries/${selectedMonth}/manual`).once("value").then(snap => {
-      const manualAdjustments = snap.val() || {};
-      document.querySelectorAll(".manual-input").forEach(input => {
-        const buyer = input.getAttribute("data-buyer");
-        if (manualAdjustments[buyer] && manualAdjustments[buyer].amount) {
-          input.value = manualAdjustments[buyer].amount;
-        } else {
-          input.value = "";
-        }
+      db.ref(`users/${userId}/entries/${selectedMonth}/net-payments`).once("value").then(snap => {
+          const netPayments = snap.val() || {};
+
+          let tableHtml = `
+            <h6>${t.netPaymentTitle}</h6>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>${t.netPaymentTableHeaders[0]}</th>
+                    <th>${t.netPaymentTableHeaders[1]}</th>
+                    <th>${t.netPaymentTableHeaders[2]}</th>
+                    <th>${t.netPaymentTableHeaders[3]}</th>
+                  </tr>
+                </thead>
+                <tbody>`;
+          
+          let hasEntries = false;
+          
+          for (const id in netPayments) {
+              if (netPayments.hasOwnProperty(id)) {
+                  hasEntries = true;
+                  const p = netPayments[id];
+                  tableHtml += `
+                    <tr>
+                      <td>${p.date}</td>
+                      <td>${p.payer}</td>
+                      <td>₹${p.amount.toFixed(2)}</td>
+                      <td>${p.receiver}</td>
+                    </tr>`;
+              }
+          }
+          
+          tableHtml += `
+                </tbody>
+              </table>
+            </div>`;
+          
+          if (!hasEntries) {
+            netPaymentLogDiv.innerHTML = `<div style="font-style: italic; color: #888;">No net balance payments for this month.</div>`;
+          } else {
+            netPaymentLogDiv.innerHTML = tableHtml;
+          }
       });
-    });
   }
 
-  function renderManualLog() {
-    const manualLogDiv = document.getElementById("manual-log");
-    const t = translations[currentLang];
-    
-    db.ref(`users/${userId}/entries/${selectedMonth}/manual`).once("value").then(snap => {
-      const manualAdjustments = snap.val() || {};
-      
-      let logHtml = `<h6>${t.manualLogTitle}</h6>`;
-      let hasEntries = false;
-      
-      for (const buyer in manualAdjustments) {
-        if (manualAdjustments.hasOwnProperty(buyer) && manualAdjustments[buyer].amount > 0) {
-          hasEntries = true;
-          logHtml += `<div class="log-entry"><strong>${buyer}:</strong> ₹${manualAdjustments[buyer].amount.toFixed(2)} added on ${manualAdjustments[buyer].date}</div>`;
-        }
-      }
-      
-      if (!hasEntries) {
-        logHtml += `<div style="font-style: italic; color: #888;">No manual adjustments for this month.</div>`;
-      }
-      
-      manualLogDiv.innerHTML = logHtml;
-    });
-  }
+  function addNetPayment() {
+    const payer = document.getElementById('net-payer-selector').value;
+    const receiver = document.getElementById('net-receiver-selector').value;
+    const amount = parseFloat(document.getElementById('net-payment-amount').value);
 
-  function addManualEntry() {
-    const manualEntries = {};
-    const currentDate = new Date().toISOString().slice(0, 10); // Get current date in YYYY-MM-DD format
-    document.querySelectorAll(".manual-input").forEach(input => {
-      const buyer = input.getAttribute("data-buyer");
-      const amount = parseFloat(input.value) || 0;
-      if (amount > 0) {
-        manualEntries[buyer] = {
-          amount: amount,
-          date: currentDate
-        };
-      }
-    });
-
-    db.ref(`users/${userId}/entries/${selectedMonth}/manual`).set(manualEntries).then(() => {
-      showBuyerSummary();
-      renderManualLog(); // Update the log after saving
-      alert("Manual adjustments saved!");
-    });
-  }
-
-  function clearAdjustments() {
-    if (confirm("Are you sure you want to clear all manual adjustments for this month?")) {
-      db.ref(`users/${userId}/entries/${selectedMonth}/manual`).remove().then(() => {
-        showBuyerSummary();
-        renderManualAdjustments();
-        renderManualLog(); // Clear the log after clearing
-        alert("Manual adjustments cleared!");
-      });
+    if (!payer || !receiver || isNaN(amount) || amount <= 0) {
+      alert("Please select a payer and a receiver and enter a valid amount.");
+      return;
     }
+    
+    if (payer === receiver) {
+        alert("Payer and receiver cannot be the same person.");
+        return;
+    }
+
+    const currentDate = new Date().toISOString().slice(0, 10);
+    const payment = {
+      payer: payer,
+      receiver: receiver,
+      amount: amount,
+      date: currentDate
+    };
+    
+    db.ref(`users/${userId}/entries/${selectedMonth}/net-payments`).push(payment).then(() => {
+        document.getElementById('net-payer-selector').value = "";
+        document.getElementById('net-receiver-selector').value = "";
+        document.getElementById('net-payment-amount').value = "";
+        showBuyerSummary();
+        renderNetPaymentsLog();
+        alert("Net balance payment added successfully!");
+    });
   }
 
   function showBuyerSummary() {
@@ -996,7 +1114,8 @@
     db.ref(`users/${userId}/entries/${selectedMonth}`).once("value").then(snap => {
       const allEntries = snap.val() || {};
       const regularEntries = Object.values(allEntries).filter(e => e.date);
-      const manualAdjustments = allEntries.manual || {};
+      const netPayments = allEntries['net-payments'] || {};
+
 
       regularEntries.forEach(e => {
         const excluded = e.excluded || [];
@@ -1009,12 +1128,13 @@
 
         buyerPaid[e.buyer] = (buyerPaid[e.buyer] || 0) + e.price;
       });
-
-      for (const buyer in manualAdjustments) {
-        if (manualAdjustments.hasOwnProperty(buyer) && manualAdjustments[buyer].amount) {
-          buyerPaid[buyer] = (buyerPaid[buyer] || 0) + manualAdjustments[buyer].amount;
-        }
+      
+      for (const id in netPayments) {
+          const payment = netPayments[id];
+          buyerPaid[payment.payer] = (buyerPaid[payment.payer] || 0) - payment.amount;
+          buyerPaid[payment.receiver] = (buyerPaid[payment.receiver] || 0) + payment.amount;
       }
+
 
       const [nameH, paidH, shareH, netH] = t.summaryTableHeaders;
 
@@ -1053,6 +1173,20 @@
   function logout() {
     auth.signOut();
   }
+  
+  // This function is no longer needed since the tabs are removed.
+  /*
+  function showTab(tabName) {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => button.classList.remove('active'));
+    tabContents.forEach(content => content.classList.remove('active'));
+    
+    document.querySelector(`.tab-button[onclick="showTab('${tabName}')"]`).classList.add('active');
+    document.getElementById(tabName).classList.add('active');
+  }
+  */
 </script>
 
 </body>
